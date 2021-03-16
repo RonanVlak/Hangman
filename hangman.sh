@@ -9,6 +9,7 @@ wordindex=0
 guessedletter=0
 correctguess=0
 goodguesses=0
+wordlength=0
 triesremaining=11
 declare -a word_guessed
 declare -a alphabet_guessed
@@ -97,7 +98,7 @@ function checkGuess {
     fi
 }
 
-
+#Print the numbers you already guessed
 function printAlphabet {
     echo "Already guessed: "
     alphabet_guessed[$alphabetindex]="$guessedletter"
@@ -106,11 +107,21 @@ function printAlphabet {
     alphabetindex=$((alphabetindex+1))
 }
 
+#Fill the word array with dots
 function printWord {
-    echo "$word"
+    i=0
+    while [[ $i -le $word_length ]]
+    do
+    word_guessed+=(.)
+    i=$((i+1))  
+    done
+    echo "The word so far: "${word_guessed[@]}""
 }
 
-
+#Update the word array with the letters the user guessed
+function updateWord {
+    echo "The word so far: "${word_guessed[@]}""
+}
 #the main program starts here
 selectWord;
 word_length=${#word}
@@ -138,8 +149,10 @@ do
 
     if [ "$playing" == "1" ]
     then
+        
         echo ""
-        echo "The word so far: "$word""
+        echo ""
+        updateWord
         echo ""
         echo ""
         printAlphabet;
