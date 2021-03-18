@@ -3,7 +3,6 @@
 #declare global variables
 word=0
 incorrectGuesses=0
-alphabet=("a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z") 
 alphabetindex=0
 wordindex=0
 guessedletter=0
@@ -13,7 +12,8 @@ wordlength=0
 triesremaining=11
 declare -a word_guessed
 declare -a alphabet_guessed
-
+declare -a word_array
+    
 
 #select a word from the "galgjewoorden file"
 function selectWord {
@@ -37,17 +37,11 @@ function userGuess {
 
                 while [ "$valid" == "0" ]
                 do
-                    #Check if the input is an alphabetic value
-                    while [ ! "$e" == "26" ] 
-                    do
-                        
-                        if [ "$input" == "${alphabet[$e]}" ]
-                        then                  
-                            valid=1                    
-                        fi
-                        e=$((e+1))
-                    done
-                    
+                    if [[ "${input//[A-Za-z]/}" = "" ]]
+                    then
+                        valid=1
+                    fi
+
                     if [ "$valid" == "0" ]
                     then
                        echo "Wrong input, please enter a new letter"
@@ -81,12 +75,22 @@ function checkGuess {
            fi
            i=$((i+1))
         done
-
+        
         if [ "$new" == "1" ]
         then
             correctguess=1
             goodguesses=$((goodguesses+occurances))
             echo "Correct!"
+            
+            i=0
+            while [[ $i -le $word_length ]]
+            do
+                if [ "$guessedletter" == "${wordarray[$i]}" ]
+                then
+                    word_guessed[$i]="$guessedletter"
+                fi
+            i=$((i+1))
+            done
         else
             echo "Incorrect, you already guessed that letter"
             triesremaining=$((triesremaining-1))      
@@ -98,19 +102,20 @@ function checkGuess {
     fi
 }
 
-#Print the numbers you already guessed
+
+#Print the letters you already guessed
 function printAlphabet {
     echo "Already guessed: "
     alphabet_guessed[$alphabetindex]="$guessedletter"
-    
     echo "${alphabet_guessed[*]}"
     alphabetindex=$((alphabetindex+1))
 }
 
+
 #Fill the word array with dots
 function printWord {
     i=0
-    while [[ $i -le $word_length ]]
+    while [[ $i -lt $word_length ]]
     do
     word_guessed+=(.)
     i=$((i+1))  
@@ -120,19 +125,35 @@ function printWord {
 
 #Update the word array with the letters the user guessed
 function updateWord {
-    echo "The word so far: "${word_guessed[@]}""
+    echo "The word so far: "${word_guessed[@]}""  
 }
+
+
 #the main program starts here
 selectWord;
 word_length=${#word}
 printWord;
+wordarray=( $(echo $word | grep -o .) )
+echo "${wordarray[@]}"
 
 playing=1
+
+
 while [ "$playing" == "1" ]
 do
     userGuess;
     checkGuess;
 
+    if [ "$playing" == "1" ]
+    then
+        
+        echo ""
+        printAlphabet
+        echo ""
+        updateWord
+        echo ""
+        echo ""
+    fi
 
     if [ "$triesremaining" -lt "1" ]
     then
@@ -146,19 +167,9 @@ do
         echo "The word was "$word"!"
         playing=0
     fi
-
+    
     if [ "$playing" == "1" ]
     then
-        
-        echo ""
-        echo ""
-        updateWord
-        echo ""
-        echo ""
-        printAlphabet;
-        echo ""
-        echo ""
-        echo ""
         echo "You have "$triesremaining" tries remaining"
         echo ""
         echo ""
