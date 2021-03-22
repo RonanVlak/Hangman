@@ -76,11 +76,9 @@ function userGuess {
 
          while [ "$valid" == "0" ]
          do
-
-            #Check if the input is a alphabetic character
+            #Check if the input is a alphabetic character and if it is only one character
              if [[ "${input//[A-Za-z]/}" = "" ]] && [[ ${#input} -eq 1 ]]
-             then
-                     
+             then      
                  valid=1                     
              fi
 
@@ -100,7 +98,7 @@ function userGuess {
 function checkGuess {
     new=1
     
-    #If the letter is in the word
+    #If the entered letter is in the word
     if [[ $word == *"$guessedletter"* ]]
     then
         occurances=0
@@ -135,19 +133,23 @@ function checkGuess {
 
             #update the alphabet with the letter you guessed
             alphabet=$(echo ""$alphabet"" | tr -d "$guessedletter")
-
+            
+            #update the total of correct guesses
             goodguesses=$((goodguesses+occurances))
         else
             echo "Incorrect, you already guessed that letter"
-
+            
+            #update the tries the user has left
             triesremaining=$((triesremaining-1))      
         fi
 
     else
         echo "Incorrect"
+
         #update the alphabet with the letter you guessed
         alphabet=$(echo ""$alphabet"" | tr -d "$guessedletter")
-          
+        
+        #update the tries the user has left
         triesremaining=$((triesremaining-1))     
     fi
 }
@@ -155,10 +157,13 @@ function checkGuess {
 
 #Print the letters you already guessed
 function printAlphabetGuessed {
-    echo "Already guessed: "
+    #Put the guessed letter on the next position in the alphabet_guessed array
     alphabet_guessed[$alphabetindex]="$guessedletter"
-    echo "${alphabet_guessed[*]}"
     alphabetindex=$((alphabetindex+1))
+
+    #Print the alphabet_guessed array
+    echo "Already guessed: "
+    echo "${alphabet_guessed[*]}"    
 }
 
 #Print the alphabet of letters yet to guess
@@ -172,8 +177,8 @@ function fillWordArray {
     i=0
     while [[ $i -lt $word_length ]]
     do
-    word_guessed+=(.)
-    i=$((i+1))  
+        word_guessed+=(.)
+        i=$((i+1))  
     done
     echo "The word so far: "${word_guessed[@]}""
 }
@@ -302,10 +307,10 @@ function mistake_11 {
 
 #the main program starts here
 function play {
-    word_length=${#word}
+    word_length=${#word}                    #Get the length of the word
     fillWordArray;
-    wordarray=( $(echo $word | grep -o .) )
-    echo "${wordarray[@]}"
+
+    wordarray=( $(echo $word | grep -o .) ) #Put the word into an array
 
     playing=1
 
@@ -315,28 +320,31 @@ function play {
 
     while [ "$playing" == "1" ]
     do
-        userGuess;
-        checkGuess;
+        userGuess;                          #Let a user enter a guess
+        checkGuess;                         #Check the guess
 
         if [ "$playing" == "1" ]
         then
             echo ""
-            printAlphabetNotGuessed
+            printAlphabetNotGuessed         #Print the letters that have not been chosen yet
             echo ""
-            printAlphabetGuessed
+            printAlphabetGuessed            #Print the leters that have been chosen already
             echo ""
             echo "The word so far: "${word_guessed[@]}""
             echo ""
             echo ""
         fi
-
+        
+        #User made 11 mistakes
         if [ "$triesremaining" -lt "1" ]
         then
             mistake_11;
             echo "Game over, you lost"
+            echo "The word was "$word""
             playing=0
         fi
 
+        #Users total correct guesses are the same as the length of the word
         if [ "$goodguesses" == "$word_length" ]
         then
             echo "You won!"
@@ -344,54 +352,67 @@ function play {
             playing=0
         fi
         
-        if [ "$playing" == "1" ]
+        #Do not show this after the game is already lost or won
+        if [ "$playing" == "1" ] 
         then
+            #Show the hangman based on the mistakes made by the user
             if [ "$triesremaining" == "10" ]
             then
                 mistake_1;
             fi
+
             if [ "$triesremaining" == "9" ]
             then
                 mistake_2;
             fi
+
             if [ "$triesremaining" == "8" ]
             then
                 mistake_3;
             fi
+
             if [ "$triesremaining" == "7" ]
             then
                 mistake_4;
             fi
+
             if [ "$triesremaining" == "6" ]
             then
                 mistake_5;
             fi
+
             if [ "$triesremaining" == "5" ]
             then
                 mistake_6;
             fi
+
             if [ "$triesremaining" == "4" ]
             then
                 mistake_7;
             fi
+
             if [ "$triesremaining" == "3" ]
             then
                 mistake_8;
             fi
+
             if [ "$triesremaining" == "2" ]
             then
                 mistake_9;
             fi
+
             if [ "$triesremaining" == "1" ]
             then
                 mistake_10;
             fi
+
             echo "You have "$triesremaining" tries remaining"
             echo ""
             echo ""
             echo ""
         fi
     done
+    
 }
 
 #Check the arguments given to the script using getopts    
@@ -408,8 +429,8 @@ case $opt in
         ;;
     h)
         echo "Options:"
-        echo "-w    : With this option, you can enter a word for the game"
-        echo "-d    : With this option, a random word will be selected for you, takes a path to a document with playing words"
+        echo "-w    : You can enter a word for the game"
+        echo "-d    : A random word will be selected from an entered document, takes a path to a document with playing words"
         echo "        Example: /home/ronan/bin/galgjewoorden"
         echo "-h    : The options of this program will be displayed"
         ;;
